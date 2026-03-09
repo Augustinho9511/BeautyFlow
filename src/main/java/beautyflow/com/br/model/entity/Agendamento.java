@@ -1,6 +1,7 @@
 package beautyflow.com.br.model.entity;
 
 
+import beautyflow.com.br.model.enums.StatusAgendamento;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,17 +28,18 @@ public class Agendamento {
 
     @ManyToOne
     @JoinColumn(name = "cliente_id")
-    private Cliente clienteId;
+    private Cliente cliente;
 
     @ManyToOne
     @JoinColumn(name = "servico_id")
-    private Servico servicoId;
+    private Servico servico;
+
+    @Enumerated(EnumType.STRING)
+    private StatusAgendamento status;
 
     @NotNull
     private LocalDateTime dataHoraInicio;
 
-    @NotBlank
-    private String status;
 
     private BigDecimal lucroReal;
 }

@@ -35,7 +35,7 @@ public class FichaTecnicaService {
 
         fichaTecnica.setServico(servicoCompleto);
         fichaTecnica.setProduto(produtoCompleto);
-        
+
         return repository.save(fichaTecnica);
     }
 
