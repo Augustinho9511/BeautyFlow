@@ -23,13 +23,13 @@ public class FichaTecnica {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "servico_id")
-    private Servico servicoId;
+    private Servico servico;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "produto_id")
-    private Produto produtoId;
+    private Produto produto;
 
     @NotNull
     @Positive

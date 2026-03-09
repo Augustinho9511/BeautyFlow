@@ -31,6 +31,6 @@ public class Servico {
 
     @NotNull
     @Positive(message = "O tempo estimado em minutos é obrigatório")
-    private Integer tempoEstimado;
+    private Integer tempoEstimadoMinutos;
 
 }

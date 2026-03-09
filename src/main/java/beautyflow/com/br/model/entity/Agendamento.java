@@ -25,13 +25,13 @@ public class Agendamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "cliente_id")
-    private Long clienteId;
+    private Cliente clienteId;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "servico_id")
-    private Long servicoId;
+    private Servico servicoId;
 
     @NotNull
     private LocalDateTime dataHoraInicio;
