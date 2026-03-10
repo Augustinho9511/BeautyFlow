@@ -1,5 +1,7 @@
 package beautyflow.com.br.service;
 
+import beautyflow.com.br.exception.RegraDeNegocioException;
+import beautyflow.com.br.model.dto.FinanceiroResumoDTO;
 import beautyflow.com.br.model.entity.Agendamento;
 import beautyflow.com.br.model.entity.FichaTecnica;
 import beautyflow.com.br.model.entity.Produto;
@@ -12,6 +14,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -67,7 +70,7 @@ public class AgendamentoService {
             Double gasto = item.getQuantidadeGasta();
 
             if (produto.getQuantidadeAtual() < gasto) {
-                throw new RuntimeException("Estoque insuficiente: " + produto.getNome());
+                throw new RegraDeNegocioException("Estoque insuficiente: " + produto.getNome());
             }
 
             produto.setQuantidadeAtual(produto.getQuantidadeAtual() - gasto);
@@ -79,5 +82,9 @@ public class AgendamentoService {
             System.out.println("Baixa: " + produto.getNome() + " | Custo: R$" + custoItem);
         }
         return custoAcumulado;
+    }
+
+    public FinanceiroResumoDTO obterResumo(LocalDateTime inicio, LocalDateTime fim) {
+        return agendamentoRepository.buscarResumoFinanceiro(inicio, fim);
     }
 }
