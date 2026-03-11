@@ -3,7 +3,6 @@ package beautyflow.com.br.model.entity;
 
 import beautyflow.com.br.model.enums.StatusAgendamento;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +11,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -40,6 +38,9 @@ public class Agendamento {
     @NotNull
     private LocalDateTime dataHoraInicio;
 
-
     private BigDecimal lucroReal;
+
+    @ManyToOne
+    @JoinColumn(name = "profissional_id")
+    private Profissional profissional;
 }

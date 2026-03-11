@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> {
 
-    @EntityGraph(attributePaths = {"cliente", "servico"})
+    @EntityGraph(attributePaths = {"cliente", "servico", "profissional"})
     Optional<Agendamento> findFullById(Long id);
 
     @Query("SELECT new beautyflow.com.br.model.dto.FinanceiroResumoDTO(" +
@@ -20,4 +20,6 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             "WHERE a.status = 'CONCLUIDO' " +
             "AND a.dataHoraInicio BETWEEN :inicio AND :fim")
     FinanceiroResumoDTO buscarResumoFinanceiro(LocalDateTime inicio, LocalDateTime fim);
+
+
 }

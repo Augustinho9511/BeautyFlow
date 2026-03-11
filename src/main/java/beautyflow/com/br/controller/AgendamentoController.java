@@ -40,4 +40,10 @@ public class AgendamentoController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
         return ResponseEntity.ok(service.obterResumo(inicio, fim));
     }
+
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<Agendamento> cancelarAgendamento(@PathVariable Long id) {
+        Agendamento cancelado = service.cancelar(id);
+        return ResponseEntity.ok(cancelado);
+    }
 }

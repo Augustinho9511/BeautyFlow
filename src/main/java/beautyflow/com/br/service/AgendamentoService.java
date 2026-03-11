@@ -10,7 +10,9 @@ import beautyflow.com.br.model.enums.StatusAgendamento;
 import beautyflow.com.br.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Status;
 import jakarta.transaction.Transactional;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -87,4 +89,39 @@ public class AgendamentoService {
     public FinanceiroResumoDTO obterResumo(LocalDateTime inicio, LocalDateTime fim) {
         return agendamentoRepository.buscarResumoFinanceiro(inicio, fim);
     }
+
+    @Transactional
+    public Agendamento cancelar(Long id) {
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new RegraDeNegocioException("Agendamento não encontrado."));
+
+        if (StatusAgendamento.CANCELADO.equals(agendamento.getStatus())) {
+            throw new RegraDeNegocioException("Esta agendamendo já encontra-se cancelado.");
+        }
+
+        if (StatusAgendamento.CONCLUIDO.equals(agendamento.getStatus())) {
+            devolverAoEstoque(agendamento.getServico());
+            agendamento.setLucroReal(java.math.BigDecimal.ZERO);
+        }
+
+        agendamento.setStatus(StatusAgendamento.CANCELADO);
+        Agendamento salvo = agendamentoRepository.save(agendamento);
+
+        return salvo;
+    }
+
+    private void devolverAoEstoque(Servico servico) {
+        List<FichaTecnica> itensFicha = fichaTecnicaRepository.findByServico(servico);
+
+        for(FichaTecnica item : itensFicha) {
+            Produto produto = item.getProduto();
+            Double quantidadeDevolvida = item.getQuantidadeGasta();
+
+            produto.setQuantidadeAtual(produto.getQuantidadeAtual() + quantidadeDevolvida);
+            produtoRepository.save(produto);
+
+            System.out.println("Estorno realisado: " + produto.getNome() + "| Devolvido: " + quantidadeDevolvida);
+        }
+    }
+
 }
