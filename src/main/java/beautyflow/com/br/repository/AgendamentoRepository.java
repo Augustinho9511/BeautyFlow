@@ -21,5 +21,12 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             "AND a.dataHoraInicio BETWEEN :inicio AND :fim")
     FinanceiroResumoDTO buscarResumoFinanceiro(LocalDateTime inicio, LocalDateTime fim);
 
+    @Query("SELECT COUNT(a) > 0 FROM Agendamento a " +
+            "WHERE a.profissional.id = :profissionalId " +
+            "AND a.status != 'CANCELADO' " +
+            "AND a.dataHoraInicio < :fim " +
+            "AND a.dataHoraFim > :inicio")
+    boolean existeConflitoDeHorario(Long profissionalId, LocalDateTime inicio, LocalDateTime fim);
+
 
 }

@@ -43,4 +43,6 @@ public class Agendamento {
     @ManyToOne
     @JoinColumn(name = "profissional_id")
     private Profissional profissional;
+
+    private LocalDateTime dataHoraFim;
 }

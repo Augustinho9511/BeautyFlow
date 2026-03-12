@@ -46,6 +46,21 @@ public class AgendamentoService {
 
     @Transactional
     public Agendamento salvar(Agendamento agendamento) {
+
+        Servico serv = servicoRepository.findById(agendamento.getServico().getId())
+                .orElseThrow(() -> new RegraDeNegocioException("Serviço não encontrado"));
+
+        LocalDateTime inicio = agendamento.getDataHoraInicio();
+        LocalDateTime fim = inicio.plusMinutes(serv.getTempoEstimadoMinutos());
+        agendamento.setDataHoraFim(fim);
+
+        boolean temConflito = agendamentoRepository.existeConflitoDeHorario(
+                agendamento.getProfissional().getId(), inicio, fim);
+
+        if (temConflito) {
+            throw new RegraDeNegocioException("A profissional já possui um agendameto neste horário!");
+        }
+
         Agendamento salvo = agendamentoRepository.save(agendamento);
 
         if (StatusAgendamento.CONCLUIDO.equals(salvo.getStatus())) {
@@ -57,8 +72,8 @@ public class AgendamentoService {
             salvo = agendamentoRepository.save(salvo);
         }
 
-        agendamentoRepository.flush(); // Garante que tudo foi pro banco
-        entityManager.refresh(salvo);  // FORÇA o Java a reler os nomes (Cliente, Serviço) do banco
+        agendamentoRepository.flush();
+        entityManager.refresh(salvo);
 
         return salvo;
     }
