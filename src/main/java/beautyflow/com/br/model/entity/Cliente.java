@@ -1,9 +1,11 @@
 package beautyflow.com.br.model.entity;
 
 
+import beautyflow.com.br.model.dto.DadosAtualizacaoCliente;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.springframework.security.core.parameters.P;
 
 @Entity
 @Getter
@@ -25,4 +27,18 @@ public class Cliente {
     private String telefoneWhatsapp;
 
     private String observacoes;
+
+    public void atualizarInformacoes(DadosAtualizacaoCliente dados) {
+        if (dados.nome() != null) {
+            this.nome = dados.nome();
+        }
+
+        if (dados.telefoneWhatsapp() != null) {
+            this.telefoneWhatsapp = dados.telefoneWhatsapp();
+        }
+
+        if (dados.observacoes() != null) {
+            this.observacoes = dados.observacoes();
+        }
+    }
 }
