@@ -28,6 +28,12 @@ public class Cliente {
 
     private String observacoes;
 
+    private Boolean ativo;
+
+    public void inativar() {
+        this.ativo = false;
+    }
+
     public void atualizarInformacoes(DadosAtualizacaoCliente dados) {
         if (dados.nome() != null) {
             this.nome = dados.nome();

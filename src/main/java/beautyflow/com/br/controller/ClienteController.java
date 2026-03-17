@@ -34,7 +34,7 @@ public class ClienteController {
 
     @GetMapping
     public ResponseEntity<List<Cliente>> listarTodos() {
-        return ResponseEntity.ok(clienteService.listarTodos());
+        return ResponseEntity.ok(repository.findAllByAtivoTrue());
     }
 
     @PutMapping
@@ -44,5 +44,14 @@ public class ClienteController {
         cliente.atualizarInformacoes(dados);
 
         return ResponseEntity.ok(new DadosDetalhamentoCliente(cliente));
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity excluir(@PathVariable Long id) {
+        var cliente = repository.getReferenceById(id);
+        cliente.inativar();
+
+        return ResponseEntity.noContent().build();
     }
 }
