@@ -1,6 +1,7 @@
 package beautyflow.com.br.model.entity;
 
 
+import beautyflow.com.br.model.dto.DadosAtualizacaoServico;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,5 +33,23 @@ public class Servico {
     @NotNull
     @Positive(message = "O tempo estimado em minutos é obrigatório")
     private Integer tempoEstimadoMinutos;
+
+    private Boolean ativo = true;
+
+    public void inativar() {
+        this.ativo = false;
+    }
+
+    public void atualizarInformacoes(DadosAtualizacaoServico dados) {
+        if (dados.nome() != null) {
+            this.nome = dados.nome();
+        }
+        if (dados.precoCobrado() != null) {
+            this.precoCobrado = dados.precoCobrado();
+        }
+        if (dados.tempoEstimadoMinutos() != null) {
+            this.tempoEstimadoMinutos = dados.tempoEstimadoMinutos();
+        }
+    }
 
 }

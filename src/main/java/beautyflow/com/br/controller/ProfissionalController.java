@@ -1,8 +1,13 @@
 package beautyflow.com.br.controller;
 
 
+import beautyflow.com.br.model.dto.DadosAtualizacaoCliente;
+import beautyflow.com.br.model.dto.DadosAtualizacaoProfissional;
+import beautyflow.com.br.model.dto.DadosDetalhamentoProfissional;
 import beautyflow.com.br.model.entity.Profissional;
 import beautyflow.com.br.repository.ProfissionalRepository;
+import jakarta.transaction.Transactional;
+import jakarta.validation.ReportAsSingleViolation;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -29,7 +34,26 @@ public class ProfissionalController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Profissional>> listarTodos() {
-        return ResponseEntity.ok(profissionalRepository.findAll());
+    public ResponseEntity<List<DadosDetalhamentoProfissional>> listarTodos() {
+        var lista = profissionalRepository.findAllByAtivoTrue().stream()
+                .map(DadosDetalhamentoProfissional::new)
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @PutMapping
+    @Transactional
+    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoProfissional dados) {
+        var profissional = profissionalRepository.getReferenceById(dados.id());
+        profissional.atualizarInformacoes(dados);
+        return ResponseEntity.ok(new DadosDetalhamentoProfissional(profissional));
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity excluir(@PathVariable Long id) {
+        var profissional =  profissionalRepository.getReferenceById(id);
+        profissional.inativar();
+        return ResponseEntity.noContent().build();
     }
 }
