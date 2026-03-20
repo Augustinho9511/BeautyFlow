@@ -10,6 +10,9 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ReportAsSingleViolation;
 import jakarta.validation.Valid;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -27,19 +30,30 @@ public class ProfissionalController {
         this.profissionalRepository = profissionalRepository;
     }
 
+    @GetMapping
+    public ResponseEntity<Page<DadosDetalhamentoProfissional>> listar(
+            @RequestParam(required = false) String nome,
+            @PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
+
+        Page<Profissional> pagina;
+
+        if (nome != null && !nome.isBlank()) {
+            pagina =profissionalRepository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome, paginacao);
+        } else {
+            pagina = profissionalRepository.findAllByAtivoTrue(paginacao);
+        }
+
+        var paginaDto = pagina.map(DadosDetalhamentoProfissional::new);
+
+        return ResponseEntity.ok(paginaDto);
+    }
+
     @PostMapping
     public ResponseEntity<Profissional> cadastrar(@RequestBody @Valid Profissional profissional) {
         Profissional salvo = profissionalRepository.save(profissional);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
-    @GetMapping
-    public ResponseEntity<List<DadosDetalhamentoProfissional>> listarTodos() {
-        var lista = profissionalRepository.findAllByAtivoTrue().stream()
-                .map(DadosDetalhamentoProfissional::new)
-                .toList();
-        return ResponseEntity.ok(lista);
-    }
 
     @PutMapping
     @Transactional
