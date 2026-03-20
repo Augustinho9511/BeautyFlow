@@ -35,7 +35,6 @@ public class ServicoController {
             @PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
 
         Page<Servico> pagina;
-
         if (nome != null && !nome.isBlank()) {
             pagina = servicoRepository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome, paginacao);
         } else {

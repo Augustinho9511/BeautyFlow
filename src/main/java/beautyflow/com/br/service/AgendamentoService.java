@@ -1,6 +1,8 @@
 package beautyflow.com.br.service;
 
 import beautyflow.com.br.exception.RegraDeNegocioException;
+import beautyflow.com.br.model.dto.DadosAgendamento;
+import beautyflow.com.br.model.dto.DadosDetalhamentoAgendamento;
 import beautyflow.com.br.model.dto.FinanceiroResumoDTO;
 import beautyflow.com.br.model.entity.Agendamento;
 import beautyflow.com.br.model.entity.FichaTecnica;
@@ -12,6 +14,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Status;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +30,8 @@ public class AgendamentoService {
     private final FichaTecnicaRepository fichaTecnicaRepository;
     private final ProdutoRepository produtoRepository;
     private final ServicoRepository servicoRepository;
+    private final ClienteRepository clienteRepository;
+    private final ProfissionalRepository profissionalRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -33,11 +39,19 @@ public class AgendamentoService {
     public AgendamentoService(AgendamentoRepository agendamentoRepository,
                               FichaTecnicaRepository fichaTecnicaRepository,
                               ProdutoRepository produtoRepository,
-                              ServicoRepository servicoRepository) {
+                              ServicoRepository servicoRepository,
+                              ClienteRepository clienteRepository,
+                              ProfissionalRepository profissionalRepository) {
         this.agendamentoRepository = agendamentoRepository;
         this.fichaTecnicaRepository = fichaTecnicaRepository;
         this.produtoRepository = produtoRepository;
         this.servicoRepository = servicoRepository;
+        this.clienteRepository = clienteRepository;
+        this.profissionalRepository = profissionalRepository;
+    }
+
+    public Page<DadosDetalhamentoAgendamento> listarTodosPaginado(Pageable paginacao) {
+        return agendamentoRepository.findAll(paginacao).map(DadosDetalhamentoAgendamento::new);
     }
 
     public List<Agendamento> listarTodos() {
@@ -45,37 +59,43 @@ public class AgendamentoService {
     }
 
     @Transactional
-    public Agendamento salvar(Agendamento agendamento) {
+    public DadosDetalhamentoAgendamento salvar(DadosAgendamento dados) {
 
-        Servico serv = servicoRepository.findById(agendamento.getServico().getId())
+
+        var cliente = clienteRepository.findById(dados.idCliente())
+                .orElseThrow(() -> new RegraDeNegocioException("Cliente não encontrado"));
+        var profissional = profissionalRepository.findById(dados.idProfissional())
+                .orElseThrow(() -> new RegraDeNegocioException("Profissional não encontrado"));
+        var servico = servicoRepository.findById(dados.idServico())
                 .orElseThrow(() -> new RegraDeNegocioException("Serviço não encontrado"));
 
+        var agendamento = new Agendamento();
+        agendamento.setCliente(cliente);
+        agendamento.setProfissional(profissional);
+        agendamento.setServico(servico);
+        agendamento.setDataHoraInicio(dados.dataHoraInicio());
+        agendamento.setStatus(StatusAgendamento.AGENDADO); // Status Padrão
+
         LocalDateTime inicio = agendamento.getDataHoraInicio();
-        LocalDateTime fim = inicio.plusMinutes(serv.getTempoEstimadoMinutos());
+        LocalDateTime fim = inicio.plusMinutes(servico.getTempoEstimadoMinutos());
         agendamento.setDataHoraFim(fim);
 
         boolean temConflito = agendamentoRepository.existeConflitoDeHorario(
-                agendamento.getProfissional().getId(), inicio, fim);
+                profissional.getId(), inicio, fim);
 
         if (temConflito) {
-            throw new RegraDeNegocioException("A profissional já possui um agendameto neste horário!");
+            throw new RegraDeNegocioException("A profissional já possui um agendamento neste horário!");
         }
 
         Agendamento salvo = agendamentoRepository.save(agendamento);
 
         if (StatusAgendamento.CONCLUIDO.equals(salvo.getStatus())) {
-            Servico servico = servicoRepository.findById(salvo.getServico().getId())
-                    .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-
             BigDecimal custoTotal = calcularCustoEBaixarEstoque(servico);
             salvo.setLucroReal(servico.getPrecoCobrado().subtract(custoTotal));
             salvo = agendamentoRepository.save(salvo);
         }
 
-        agendamentoRepository.flush();
-        entityManager.refresh(salvo);
-
-        return salvo;
+        return new DadosDetalhamentoAgendamento(salvo);
     }
 
     private BigDecimal calcularCustoEBaixarEstoque(Servico servico) {

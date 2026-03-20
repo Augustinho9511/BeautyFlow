@@ -4,33 +4,35 @@ package beautyflow.com.br.model.entity;
 import beautyflow.com.br.model.enums.StatusAgendamento;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "Agendamento")
 @Getter
 @Setter
 @Table(name = "tb_agendamento")
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class Agendamento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "servico_id")
     private Servico servico;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profissional_id")
+    private Profissional profissional;
 
     @Enumerated(EnumType.STRING)
     private StatusAgendamento status;
@@ -40,9 +42,11 @@ public class Agendamento {
 
     private BigDecimal lucroReal;
 
-    @ManyToOne
-    @JoinColumn(name = "profissional_id")
-    private Profissional profissional;
-
     private LocalDateTime dataHoraFim;
+
+    private Boolean cancelado = false;
+
+    public void cancelar() {
+        this.cancelado = true;
+    }
 }

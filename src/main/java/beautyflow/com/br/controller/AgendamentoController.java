@@ -1,10 +1,15 @@
 package beautyflow.com.br.controller;
 
 
+import beautyflow.com.br.model.dto.DadosAgendamento;
+import beautyflow.com.br.model.dto.DadosDetalhamentoAgendamento;
 import beautyflow.com.br.model.dto.FinanceiroResumoDTO;
 import beautyflow.com.br.model.entity.Agendamento;
 import beautyflow.com.br.service.AgendamentoService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,14 +29,17 @@ public class AgendamentoController {
     }
 
     @PostMapping
-    public ResponseEntity<Agendamento> cadastrar(@Valid @RequestBody Agendamento agendamento) {
-        Agendamento novoAgendamento = service.salvar(agendamento);
+    public ResponseEntity<DadosDetalhamentoAgendamento> cadastrar(@Valid @RequestBody DadosAgendamento dados) {
+        DadosDetalhamentoAgendamento novoAgendamento = service.salvar(dados);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoAgendamento);
     }
 
     @GetMapping
-    public ResponseEntity<List<Agendamento>> listarTodos() {
-        return ResponseEntity.ok(service.listarTodos());
+    public ResponseEntity<Page<DadosDetalhamentoAgendamento>> listarTodos(
+            @PageableDefault(size = 10, sort = {"dataHoraInicio"}) Pageable paginacao) {
+
+        Page<DadosDetalhamentoAgendamento> pagina = service.listarTodosPaginado(paginacao);
+        return ResponseEntity.ok(pagina);
     }
 
     @GetMapping("/resumo")
