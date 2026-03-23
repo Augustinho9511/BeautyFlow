@@ -3,10 +3,13 @@ package beautyflow.com.br.controller;
 
 import beautyflow.com.br.model.dto.DadosAgendamento;
 import beautyflow.com.br.model.dto.DadosDetalhamentoAgendamento;
+import beautyflow.com.br.model.dto.DadosDetalhamentoServico;
 import beautyflow.com.br.model.dto.FinanceiroResumoDTO;
 import beautyflow.com.br.model.entity.Agendamento;
 import beautyflow.com.br.service.AgendamentoService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -22,11 +25,9 @@ import java.util.List;
 @RequestMapping("/agendamentos")
 public class AgendamentoController {
 
-    private final AgendamentoService service;
+    @Autowired
+    private AgendamentoService service;
 
-    public AgendamentoController(AgendamentoService service) {
-        this.service = service;
-    }
 
     @PostMapping
     public ResponseEntity<DadosDetalhamentoAgendamento> cadastrar(@Valid @RequestBody DadosAgendamento dados) {
@@ -53,5 +54,12 @@ public class AgendamentoController {
     public ResponseEntity<Agendamento> cancelarAgendamento(@PathVariable Long id) {
         Agendamento cancelado = service.cancelar(id);
         return ResponseEntity.ok(cancelado);
+    }
+
+    @PatchMapping("/{id}/concluir")
+    @Transactional
+    public ResponseEntity<DadosDetalhamentoAgendamento> concluirAgendamento(@PathVariable Long id) {
+        var dto = service.concluir(id);
+        return ResponseEntity.ok(dto);
     }
 }

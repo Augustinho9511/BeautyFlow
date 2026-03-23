@@ -9,6 +9,7 @@ import beautyflow.com.br.service.ClienteService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -21,13 +22,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/clientes")
 public class ClienteController {
 
-    private final ClienteService clienteService;
-    private final ClienteRepository repository;
+    @Autowired
+    private ClienteService clienteService;
+    @Autowired
+    private ClienteRepository repository;
 
-    public ClienteController(ClienteService clienteService, ClienteRepository repository) {
-        this.clienteService = clienteService;
-        this.repository = repository;
-    }
 
     @GetMapping
     public ResponseEntity<Page<DadosDetalhamentoCliente>> listar(

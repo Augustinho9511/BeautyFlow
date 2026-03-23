@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ReportAsSingleViolation;
 import jakarta.validation.Valid;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -24,11 +25,9 @@ import java.util.List;
 @RequestMapping("/profissionais")
 public class ProfissionalController {
 
-    private final ProfissionalRepository profissionalRepository;
+    @Autowired
+    private ProfissionalRepository profissionalRepository;
 
-    public ProfissionalController(ProfissionalRepository profissionalRepository) {
-        this.profissionalRepository = profissionalRepository;
-    }
 
     @GetMapping
     public ResponseEntity<Page<DadosDetalhamentoProfissional>> listar(

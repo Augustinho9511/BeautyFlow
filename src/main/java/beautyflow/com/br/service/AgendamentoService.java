@@ -159,4 +159,20 @@ public class AgendamentoService {
         }
     }
 
+    @Transactional
+    public DadosDetalhamentoAgendamento concluir(Long id) {
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new RegraDeNegocioException("Agendamento não encontrado."));
+
+        if (!StatusAgendamento.AGENDADO.equals(agendamento.getStatus())) {
+            throw new RegraDeNegocioException("Apenas agendametos com status AGENDADO podem ser concluíddos.");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CONCLUIDO);
+        BigDecimal custoTotal = calcularCustoEBaixarEstoque(agendamento.getServico());
+        agendamento.setLucroReal(agendamento.getServico().getPrecoCobrado().subtract(custoTotal));
+
+        return new DadosDetalhamentoAgendamento(agendamento);
+    }
+
 }
