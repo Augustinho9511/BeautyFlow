@@ -126,7 +126,7 @@ public class AgendamentoService {
     }
 
     @Transactional
-    public Agendamento cancelar(Long id) {
+    public DadosDetalhamentoAgendamento cancelar(Long id) {
         Agendamento agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new RegraDeNegocioException("Agendamento não encontrado."));
 
@@ -140,9 +140,8 @@ public class AgendamentoService {
         }
 
         agendamento.setStatus(StatusAgendamento.CANCELADO);
-        Agendamento salvo = agendamentoRepository.save(agendamento);
 
-        return salvo;
+        return new DadosDetalhamentoAgendamento(agendamento);
     }
 
     private void devolverAoEstoque(Servico servico) {

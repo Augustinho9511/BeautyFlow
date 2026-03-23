@@ -51,9 +51,9 @@ public class AgendamentoController {
     }
 
     @PatchMapping("/{id}/cancelar")
-    public ResponseEntity<Agendamento> cancelarAgendamento(@PathVariable Long id) {
-        Agendamento cancelado = service.cancelar(id);
-        return ResponseEntity.ok(cancelado);
+    public ResponseEntity<DadosDetalhamentoAgendamento> cancelarAgendamento(@PathVariable Long id) {
+        var dto = service.cancelar(id);
+        return ResponseEntity.ok(dto);
     }
 
     @PatchMapping("/{id}/concluir")
