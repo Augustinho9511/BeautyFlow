@@ -1,13 +1,11 @@
 package beautyflow.com.br.service;
 
 import beautyflow.com.br.exception.RegraDeNegocioException;
+import beautyflow.com.br.exception.ValidacaoException;
 import beautyflow.com.br.model.dto.DadosAgendamento;
 import beautyflow.com.br.model.dto.DadosDetalhamentoAgendamento;
 import beautyflow.com.br.model.dto.FinanceiroResumoDTO;
-import beautyflow.com.br.model.entity.Agendamento;
-import beautyflow.com.br.model.entity.FichaTecnica;
-import beautyflow.com.br.model.entity.Produto;
-import beautyflow.com.br.model.entity.Servico;
+import beautyflow.com.br.model.entity.*;
 import beautyflow.com.br.model.enums.StatusAgendamento;
 import beautyflow.com.br.repository.*;
 import jakarta.persistence.EntityManager;
@@ -61,20 +59,27 @@ public class AgendamentoService {
     @Transactional
     public DadosDetalhamentoAgendamento salvar(DadosAgendamento dados) {
 
-
         var cliente = clienteRepository.findById(dados.idCliente())
-                .orElseThrow(() -> new RegraDeNegocioException("Cliente não encontrado"));
+                .filter(Cliente::getAtivo)
+                .orElseThrow(() -> new ValidacaoException("Cliente não encontrado ou inativo."));
+
         var profissional = profissionalRepository.findById(dados.idProfissional())
-                .orElseThrow(() -> new RegraDeNegocioException("Profissional não encontrado"));
+                .filter(Profissional::getAtivo)
+                .orElseThrow(() -> new ValidacaoException("Profissional não encontrado ou inativo."));
+
         var servico = servicoRepository.findById(dados.idServico())
-                .orElseThrow(() -> new RegraDeNegocioException("Serviço não encontrado"));
+                .orElseThrow(() -> new ValidacaoException("Serviço não encontrado."));
+
+        if (dados.dataHoraInicio().isBefore(LocalDateTime.now())) {
+            throw new ValidacaoException("A data do agendamento não pode ser no passado!");
+        }
 
         var agendamento = new Agendamento();
         agendamento.setCliente(cliente);
         agendamento.setProfissional(profissional);
         agendamento.setServico(servico);
         agendamento.setDataHoraInicio(dados.dataHoraInicio());
-        agendamento.setStatus(StatusAgendamento.AGENDADO); // Status Padrão
+        agendamento.setStatus(StatusAgendamento.AGENDADO);
 
         LocalDateTime inicio = agendamento.getDataHoraInicio();
         LocalDateTime fim = inicio.plusMinutes(servico.getTempoEstimadoMinutos());
@@ -84,7 +89,7 @@ public class AgendamentoService {
                 profissional.getId(), inicio, fim);
 
         if (temConflito) {
-            throw new RegraDeNegocioException("A profissional já possui um agendamento neste horário!");
+            throw new ValidacaoException("A profissional já possui um agendamento neste horário!");
         }
 
         Agendamento salvo = agendamentoRepository.save(agendamento);
