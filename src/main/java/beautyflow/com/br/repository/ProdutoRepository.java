@@ -9,5 +9,6 @@ import java.util.List;
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
     @Query("SELECT p FROM Produto p WHERE p.quantidadeAtual <= p.quantidadeMinima")
-    List<Produto> findProdutosComEstoqueCritico();
+    List<Produto> buscarProdutosEmEstoqueCritico();
+
 }

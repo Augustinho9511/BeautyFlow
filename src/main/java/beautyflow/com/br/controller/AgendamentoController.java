@@ -1,10 +1,7 @@
 package beautyflow.com.br.controller;
 
 
-import beautyflow.com.br.model.dto.DadosAgendamento;
-import beautyflow.com.br.model.dto.DadosDetalhamentoAgendamento;
-import beautyflow.com.br.model.dto.DadosDetalhamentoServico;
-import beautyflow.com.br.model.dto.FinanceiroResumoDTO;
+import beautyflow.com.br.model.dto.*;
 import beautyflow.com.br.model.entity.Agendamento;
 import beautyflow.com.br.service.AgendamentoService;
 import jakarta.transaction.Transactional;
@@ -62,4 +59,19 @@ public class AgendamentoController {
         var dto = service.concluir(id);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/periodo")
+    public ResponseEntity<List<DadosDetalhamentoAgendamento>> listar(
+            @RequestParam(required = false) LocalDateTime inicio,
+            @RequestParam(required = false) LocalDateTime fim) {
+        var lista = service.listar(inicio, fim);
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/comissoes")
+    public ResponseEntity<List<ComissaoProfissionalDTO>> listarComissoes() {
+        var comissoes = service.listarComissoes();
+        return ResponseEntity.ok(comissoes);
+    }
+
 }

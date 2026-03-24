@@ -32,6 +32,8 @@ public class Profissional {
 
     private Boolean ativo;
 
+    private java.math.BigDecimal percentualComissao = new java.math.BigDecimal("0.30");
+
     public void inativar() {
         this.ativo = false;
     }

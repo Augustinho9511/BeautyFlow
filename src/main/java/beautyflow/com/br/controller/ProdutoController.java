@@ -15,10 +15,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/produtos")
 public class ProdutoController {
+
+    @Autowired
+    private ProdutoService service;
 
     @Autowired
     private ProdutoRepository repository;
@@ -29,22 +34,29 @@ public class ProdutoController {
         var produto = new Produto();
         produto.setNome(dados.nome());
         produto.setQuantidadeAtual(dados.quantidadeAtual());
-        produto.setCustoPorMedida(dados.custoPorMedida());
         produto.setUnidadeMedida(dados.unidadeMedida());
         produto.setPrecoCustoTotal(dados.precoCustoTotal());
         produto.setQuantidadeMinima(dados.quantidadeMinima());
 
-        repository.save(produto);
+        Produto produtoSalvo = service.salvar(produto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new DadosDetalhamentoProduto(produto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new DadosDetalhamentoProduto(produtoSalvo));
     }
 
     @GetMapping
     public ResponseEntity<Page<DadosDetalhamentoProduto>> listar(
             @PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
-
         var pagina = repository.findAll(paginacao).map(DadosDetalhamentoProduto::new);
         return ResponseEntity.ok(pagina);
+    }
+
+    @GetMapping("/estoque-critico")
+    public ResponseEntity<List<DadosDetalhamentoProduto>> listarEstoqueCritico() {
+        var produtosCriticos = service.listarEstoqueCritico().stream()
+                .map(DadosDetalhamentoProduto::new)
+                .toList();
+
+        return ResponseEntity.ok(produtosCriticos);
     }
 
 }

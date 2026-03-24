@@ -30,7 +30,7 @@ public class ProdutoService {
         return produtoRepository.save(produto);
     }
 
-    public List<Produto> listarTodos() {
-        return produtoRepository.findAll();
+    public List<Produto> listarEstoqueCritico() {
+        return produtoRepository.buscarProdutosEmEstoqueCritico();
     }
 }

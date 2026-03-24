@@ -2,6 +2,7 @@ package beautyflow.com.br.service;
 
 import beautyflow.com.br.exception.RegraDeNegocioException;
 import beautyflow.com.br.exception.ValidacaoException;
+import beautyflow.com.br.model.dto.ComissaoProfissionalDTO;
 import beautyflow.com.br.model.dto.DadosAgendamento;
 import beautyflow.com.br.model.dto.DadosDetalhamentoAgendamento;
 import beautyflow.com.br.model.dto.FinanceiroResumoDTO;
@@ -10,11 +11,9 @@ import beautyflow.com.br.model.enums.StatusAgendamento;
 import beautyflow.com.br.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Status;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -54,6 +53,10 @@ public class AgendamentoService {
 
     public List<Agendamento> listarTodos() {
         return agendamentoRepository.findAll();
+    }
+
+    public List<ComissaoProfissionalDTO> listarComissoes() {
+        return agendamentoRepository.calcularComissoes();
     }
 
     @Transactional
@@ -133,15 +136,15 @@ public class AgendamentoService {
     @Transactional
     public DadosDetalhamentoAgendamento cancelar(Long id) {
         Agendamento agendamento = agendamentoRepository.findById(id)
-                .orElseThrow(() -> new RegraDeNegocioException("Agendamento não encontrado."));
+                .orElseThrow(() -> new ValidacaoException("Agendamento não encontrado."));
 
         if (StatusAgendamento.CANCELADO.equals(agendamento.getStatus())) {
-            throw new RegraDeNegocioException("Esta agendamendo já encontra-se cancelado.");
+            throw new ValidacaoException("Este agendamento já encontra-se cancelado.");
         }
 
         if (StatusAgendamento.CONCLUIDO.equals(agendamento.getStatus())) {
             devolverAoEstoque(agendamento.getServico());
-            agendamento.setLucroReal(java.math.BigDecimal.ZERO);
+            agendamento.setLucroReal(BigDecimal.ZERO);
         }
 
         agendamento.setStatus(StatusAgendamento.CANCELADO);
@@ -166,17 +169,32 @@ public class AgendamentoService {
     @Transactional
     public DadosDetalhamentoAgendamento concluir(Long id) {
         Agendamento agendamento = agendamentoRepository.findById(id)
-                .orElseThrow(() -> new RegraDeNegocioException("Agendamento não encontrado."));
+                .orElseThrow(() -> new ValidacaoException("Agendamento não encontrado."));
 
         if (!StatusAgendamento.AGENDADO.equals(agendamento.getStatus())) {
-            throw new RegraDeNegocioException("Apenas agendametos com status AGENDADO podem ser concluíddos.");
+            throw new ValidacaoException("Apenas agendamentos com status AGENDADO podem ser concluídos.");
         }
 
         agendamento.setStatus(StatusAgendamento.CONCLUIDO);
+
         BigDecimal custoTotal = calcularCustoEBaixarEstoque(agendamento.getServico());
         agendamento.setLucroReal(agendamento.getServico().getPrecoCobrado().subtract(custoTotal));
 
         return new DadosDetalhamentoAgendamento(agendamento);
+    }
+
+    public List<DadosDetalhamentoAgendamento> listar(LocalDateTime inicio, LocalDateTime fim) {
+        if (inicio == null) {
+            inicio = LocalDateTime.now().withHour(0).withMinute(0);
+        }
+        if (fim == null) {
+            fim = inicio.plusDays(1).withHour(23).withMinute(59);
+        }
+
+        return agendamentoRepository.buscarPorPeriodo(inicio, fim)
+                .stream()
+                .map(DadosDetalhamentoAgendamento::new)
+                .toList();
     }
 
 }

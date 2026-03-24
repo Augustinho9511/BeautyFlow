@@ -17,7 +17,6 @@ public class FichaTecnicaService {
     private final ServicoRepository servicoRepository;
     private final ProdutoRepository produtoRepository;
 
-    // O Spring vai injetar os 3 repositórios aqui automaticamente
     public FichaTecnicaService(FichaTecnicaRepository repository,
                                ServicoRepository servicoRepository,
                                ProdutoRepository produtoRepository) {
