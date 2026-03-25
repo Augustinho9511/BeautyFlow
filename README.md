@@ -82,4 +82,4 @@ Bash
 ./gradlew bootRun
 Acesse o Swagger localmente em: http://localhost:8080/swagger-ui/index.html
 
-Projeto desenvolvido por Pedro Augustinho. Conecte-se comigo no LinkedIn.
+Projeto desenvolvido por Pedro Augustinho. Conecte-se comigo no LinkedIn. https://www.linkedin.com/in/pedro-augusto-dev-ti/
